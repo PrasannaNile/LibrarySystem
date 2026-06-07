@@ -7,3 +7,15 @@
   - Member Initialization Lists.
 - **Code Progress:** Created `Book.h`, `Book.cpp`, and initialized `main.cpp`.
 - **Blockers/Notes:** Need to ensure MySQL connector paths are set up correctly in `CMakeLists.txt` tomorrow.
+
+
+## Day 2. Recovery and User Modeling
+- **Goal** Design User Model core attributes and getter & setter methods
+- **Massive Collaspe:** Accidentally lost all work from Day 1. No trace of Day 1 work 
+  - and also no permanent work push on github.
+-  **Recovery:** Struture entire LibrarySystem from scratch and build again
+- **Github repo:** New remote repo and everything is permanently tracked
+- **CMake:** download CMake to manage huge multi-file project easily
+  - creates a map for .cpp file and link them together to generate .exe
+- **Pull Request:** reviewed feature/User-model and merge with main
+
