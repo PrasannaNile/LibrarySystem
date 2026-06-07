@@ -15,4 +15,5 @@ include_directories(include)
 add_executable(LibrarySystem 
     src/main.cpp 
     src/models/Book.cpp
+    src/models/User.cpp
 )
