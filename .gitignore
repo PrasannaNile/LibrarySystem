@@ -1,1 +1,11 @@
-ECHO is on.
+# Prerequisites
+build/
+bin/
+
+# IDE files
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db
