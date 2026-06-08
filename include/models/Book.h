@@ -10,9 +10,14 @@ private:
     std::string author;
     float price;
     BookStatus status;
+    std::string* profileLog;
+
 
 public:
     Book(std::string _bookId, std::string _title, std::string _author, float _price);
+    Book(const Book& other);
+    Book& operator=(const Book& other);
+    ~Book();
     
     std::string get_bookId() const;
     std::string get_title() const;

@@ -19,3 +19,13 @@
   - creates a map for .cpp file and link them together to generate .exe
 - **Pull Request:** reviewed feature/User-model and merge with main
 
+
+## Day 3. Book Lifecycle
+- **Goal:** Handle lifecycle of Book object 
+- **Concept:** If class have dynamic memory allocation on heap using new keyword,
+  - it must be deallocated after during object goes out of bound
+- **Implementation:** Copy constructor to create exact same Book model
+  - Copy assignment operator to match the state of existing Book model
+  - Destructor to free up heap memory to avoid memory leaks
+- **Issues:** Intellisense show fake red squiggly lines, no error but still project red
+  - **solution** developer reload window from palette
