@@ -12,7 +12,7 @@ class Library {
 private:
     std::vector<Book> books;
     std::vector<User> users;
-    const std::vector<Transaction> transactions;
+    std::vector<Transaction> transactions;
 
 public:
     Library() = default;
