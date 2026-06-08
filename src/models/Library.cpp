@@ -3,7 +3,10 @@
 #include <iostream>
 
 
-void Library::add_book(const Book& new_book) { books.push_back(new_book); }
+void Library::add_book(const Book& new_book) { 
+    books.push_back(new_book); 
+    save_books_to_file();
+}
 
 
 void Library::register_user(const User& new_user) { users.push_back(new_user); }
@@ -20,6 +23,7 @@ void Library::issue_book(const std::string& bookId, const std::string& userId) {
 
                 book.set_status(BookStatus::LOANED);
                 std::cout << "Success: Book " << bookId << " successfully issued to user " << userId << ".\n";
+                save_books_to_file();
                 return;
             } else {
                 std::cout << "Error: Book " << bookId << " is currently not available (Status: LOANED/RESERVED/LOST).\n";
@@ -49,6 +53,7 @@ void Library::return_book(const std::string& bookId, const std::string& userId) 
                     
                     book.set_status(BookStatus::AVAILABLE);
                     std::cout << "Success: Book " << bookId << " successfully returned by user " << userId << ".\n";
+                    save_books_to_file();
                     return;
                 }
             }
@@ -57,7 +62,6 @@ void Library::return_book(const std::string& bookId, const std::string& userId) 
 
     std::cout << "Error: Book " << bookId << " not found in library." << "\n";
 }
-
 
 
 bool Library::is_valid_transaction(const std::string& bookId, const std::string& userId) {
@@ -70,9 +74,29 @@ bool Library::is_valid_transaction(const std::string& bookId, const std::string&
 }
 
 
-
 void Library::display_books() const {
     for (const auto& book : books) {
         std::cout << "ID: " << book.get_bookId() << " | Title: " << book.get_title() << "\n";
     }
+}
+
+
+void Library::save_books_to_file() const {
+    std::ofstream outFile ("books.txt");
+    if(!outFile) {
+        std::cerr << "Error: Denied permission or file not exist..\n";
+        return;
+    }
+
+    for(const auto& book: books) {
+        outFile << book.get_bookId() << "|" << book.get_title() << "|" << book.get_author() << "|"
+                << book.get_price() << "|" << static_cast<int>(book.get_status()) << "\n";
+    }
+
+    outFile.close();
+}
+
+
+void Library::load_books_from_file() {
+
 }

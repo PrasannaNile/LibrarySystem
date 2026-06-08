@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-enum class BookStatus { AVAILABLE, LOANED, RESERVED, LOST };
+enum class BookStatus { AVAILABLE = 1, LOANED = 2, RESERVED = 3, LOST = 4 };
 
 class Book {
 private:
