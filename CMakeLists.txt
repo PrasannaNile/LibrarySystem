@@ -16,4 +16,5 @@ add_executable(LibrarySystem
     src/main.cpp 
     src/models/Book.cpp
     src/models/User.cpp
+    src/models/Library.cpp
 )
