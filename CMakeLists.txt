@@ -17,4 +17,5 @@ add_executable(LibrarySystem
     src/models/Book.cpp
     src/models/User.cpp
     src/models/Library.cpp
+    src/models/Transaction.cpp
 )
