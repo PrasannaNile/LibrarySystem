@@ -12,9 +12,12 @@ private:
     BookStatus status;
     std::string* profileLog;
 
+    static int countId;
+
 
 public:
-    Book(std::string _bookId, std::string _title, std::string _author, float _price);
+    Book(const std::string& _title, const std::string& _author, const float _price);
+    Book(const std::string& bookId, const std::string& _title, const std::string& _author, const float _price, const BookStatus& status);
     Book(const Book& other);
     Book& operator=(const Book& other);
     ~Book();
@@ -24,6 +27,7 @@ public:
     std::string get_author() const;
     float get_price() const;
     BookStatus get_status() const;
+    static void id_incrementor();
 
     void set_status(BookStatus new_status);
 };

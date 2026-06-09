@@ -112,6 +112,10 @@ void Library::load_books_from_file() {
 
     std::string line = "";
     while(std::getline(inFile, line)) {
+        if (line.empty()) {
+            continue; 
+        };
+
         std::stringstream ss(line);
 
         std::string bookId;
@@ -130,8 +134,7 @@ void Library::load_books_from_file() {
         float price = std::stof(priceStr);
         BookStatus status = static_cast<BookStatus> (std::stoi(statusStr));
         
-        Book loadedBook(bookId, title, author, price);
-        loadedBook.set_status(status);
+        Book loadedBook(bookId, title, author, price, status);
 
         books.push_back(loadedBook);
 
