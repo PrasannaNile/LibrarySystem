@@ -1,11 +1,13 @@
 #include "models/Library.h"
 
 #include <iostream>
+#include <fstream>
 #include <sstream>
 
 
 Library::Library() {
     load_books_from_file();
+    load_user_from_file();
 }
 
 
@@ -13,9 +15,6 @@ void Library::add_book(const Book& new_book) {
     books.push_back(new_book); 
     save_books_to_file();
 }
-
-
-void Library::register_user(const User& new_user) { users.push_back(new_user); }
 
 
 void Library::issue_book(const std::string& bookId, const std::string& userId) {
@@ -70,23 +69,6 @@ void Library::return_book(const std::string& bookId, const std::string& userId) 
 }
 
 
-bool Library::is_valid_transaction(const std::string& bookId, const std::string& userId) {
-    for(auto it = transactions.rbegin(); it != transactions.rend(); ++it) {
-        if(it->get_bookId() == bookId && it->get_userId() == userId && it->get_type() == TransactionType::ISSUED) {
-            return true;
-        }
-    }
-    return false;
-}
-
-
-void Library::display_books() const {
-    for (const auto& book : books) {
-        std::cout << "ID: " << book.get_bookId() << " | Title: " << book.get_title() << "\n";
-    }
-}
-
-
 void Library::save_books_to_file() const {
     std::ofstream outFile ("books.txt");
     if(!outFile) {
@@ -101,7 +83,6 @@ void Library::save_books_to_file() const {
 
     outFile.close();
 }
-
 
 void Library::load_books_from_file() {
     std::ifstream inFile("books.txt");
@@ -139,4 +120,83 @@ void Library::load_books_from_file() {
         books.push_back(loadedBook);
 
     } 
+}
+
+void Library::display_books() const {
+    for (const auto& book : books) {
+        std::cout << "ID: " << book.get_bookId() << " | Title: " << book.get_title() << "\n";
+    }
+}
+
+
+void Library::register_user(const User& new_user) { 
+    users.push_back(new_user); 
+    save_user_to_file();
+}
+
+
+void Library::save_user_to_file() const {
+    std::ofstream outFile("users.txt");
+    if(!outFile) {
+        std::cerr << "Error: Denied permission or file not exist..\n";
+        return;
+    }
+
+    for(const auto& user: users) {
+        outFile << user.get_userId() << "|" << user.get_name() << "|" << user.get_email() << "|" 
+                << static_cast<int>(user.get_role()) << "\n";
+    } 
+
+    outFile.close();
+}
+
+
+void Library::load_user_from_file() {
+    std::ifstream inFile("users.txt");
+    if(!inFile) {
+        std::cerr << "Error: Denied permission or file not exist..\n";
+        return;
+    }
+
+    std::string line{};
+    while(std::getline(inFile, line)) {
+        if(line.empty()) continue;
+
+        std::stringstream ss(line);
+
+        std::string userId;
+        std::string name;
+        std::string email;
+        std::string roleStr;
+
+        std::getline(ss, userId, '|');
+        std::getline(ss, name, '|');
+        std::getline(ss, email, '|');
+        std::getline(ss, roleStr, '|');
+
+        UserRole role = static_cast<UserRole>(std::stoi(roleStr));
+
+        User loadedUser(userId, name, email, role);
+        users.push_back(loadedUser);
+
+    }
+
+    inFile.close();
+}
+
+void Library::display_users() const {
+    for(const auto& user: users) {
+        std::cout << "ID: " << user.get_userId() << " | Title: " << user.get_name() << "\n";
+    }
+}
+
+
+
+bool Library::is_valid_transaction(const std::string& bookId, const std::string& userId) {
+    for(auto it = transactions.rbegin(); it != transactions.rend(); ++it) {
+        if(it->get_bookId() == bookId && it->get_userId() == userId && it->get_type() == TransactionType::ISSUED) {
+            return true;
+        }
+    }
+    return false;
 }
