@@ -17,7 +17,7 @@ private:
     std::vector<Transaction> transactions;
 
 public:
-    Library() = default;
+    Library();
     void add_book(const Book& new_book);
     void register_user(const User& new_user);
     void issue_book(const std::string& bookId, const std::string& userId);

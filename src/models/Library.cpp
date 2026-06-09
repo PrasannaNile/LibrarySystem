@@ -1,6 +1,12 @@
 #include "models/Library.h"
 
 #include <iostream>
+#include <sstream>
+
+
+Library::Library() {
+    load_books_from_file();
+}
 
 
 void Library::add_book(const Book& new_book) { 
@@ -98,5 +104,36 @@ void Library::save_books_to_file() const {
 
 
 void Library::load_books_from_file() {
+    std::ifstream inFile("books.txt");
+    if(!inFile) {
+        std::cerr << "Error: Denied permission or file not exist..\n";
+        return;
+    }
 
+    std::string line = "";
+    while(std::getline(inFile, line)) {
+        std::stringstream ss(line);
+
+        std::string bookId;
+        std::string title;
+        std::string author;
+        std::string priceStr;
+        std::string statusStr;
+        
+
+        std::getline(ss, bookId, '|');
+        std::getline(ss, title, '|');
+        std::getline(ss, author, '|');
+        std::getline(ss, priceStr, '|');
+        std::getline(ss, statusStr, '|');
+
+        float price = std::stof(priceStr);
+        BookStatus status = static_cast<BookStatus> (std::stoi(statusStr));
+        
+        Book loadedBook(bookId, title, author, price);
+        loadedBook.set_status(status);
+
+        books.push_back(loadedBook);
+
+    } 
 }
