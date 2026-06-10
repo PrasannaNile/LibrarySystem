@@ -2,7 +2,7 @@
 
 #include <string>
 
-enum class UserRole {STUDENT = 1, ADMIN = 2};
+enum class UserRole {ADMIN = 1, STUDENT = 2};
 
 
 class User {

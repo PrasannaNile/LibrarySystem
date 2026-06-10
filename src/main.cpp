@@ -65,7 +65,26 @@ void handleAdminRouter(int choice, Library& lib) {
             lib.display_books();
             break;
         case 3: {
-            // Your existing Case 3 logic (Register User)
+            clearInputBuffer();
+            std::string name;
+            std::cout << "Name: "; std::getline(std::cin, name);
+
+            std::string email;
+            std::cout << "Email: "; std::getline(std::cin, email);
+
+            std::string roleStr;
+            std::cout << "Role(ADMIN: 1 , STUDENT: 2): "; std::getline(std::cin, roleStr);
+
+            int role{2};
+            try {
+                role = std::stoi(roleStr);
+                if(role != 1 && role != 2) throw std::runtime_error("Invalid role selected");;
+                lib.register_user(User(name, email, static_cast<UserRole> (role)));
+                std::cout << "User added successfully!\n";
+            } 
+            catch(const std::exception& e) {
+                std::cout << "Invalid role format! Please try again.\n";
+            }
             break;
         }
         case 4:
