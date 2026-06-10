@@ -36,3 +36,36 @@
 - **Need:** Tracks all books and users current in library
 - **structure:** add new book and register new user in Library
  - displays book_id and title of all books 
+
+
+## Day 5. Transactions
+- **Goal:** Keep a track of borrow and return book transaction
+- **Need:** List to store bookId and userId involved in transaction
+- **Implementation:** Major operation like issue book and return book 
+  - needs new transaction creation 
+- **Issue Book:** Book can be only issue if its available
+- **Return Book:** Book can be only return if it is loaned
+  - to return there must be a transaction entry for Issued Book (bookId, userId, ISSUE)
+
+## Day 6. Model Persistence and File IO
+- **Goal:** Users and Books are only store in vector
+  - They only exist for a session when program runs
+- **Need:** Data files on permenant storage to store all books and users
+- **Concept:** Used of fstream header file for File IO
+  - **ofstream(writing):** Outputing data to the file
+  - **ifstream(reading):** Inputing data from the file
+  - Just like cout, outputs data to console, ofstream does this in file
+  - Just like cin, extract data from console, ifstream does from file
+- **Auto generate Id:** Book and user have auto generate unique Id to avoid collision
+
+## Day 7. Interactive Console UI Menu
+### Progress Summary
+* **Built Main Application Engine:** Implemented a continuous `while(true)` application loop in `main.cpp` to keep the program active until explicitly terminated by the user.
+* **Engine Router:** Configured a native C++ block-scoped `switch` statement to seamlessly route user selections across available system functionalities.
+* **Bulletproofed Input Buffers:** Integrated customized stream cleaning routines utilizing `std::cin.clear()` and `std::cin.ignore()` to entirely resolve input skipping bugs when mixing raw `std::cin >>` reads with `std::getline()`.
+* **Crash-Proof Conversions:** Wrapped string-to-numeric casting (`std::stof`) inside robust `try-catch` blocks to protect the active run-time environment from throwing fatal unhandled exceptions on malformed alphanumeric inputs.
+
+### Technical Learnings
+* **Switch Case Variable Scoping:** Re-verified that initializing variables directly inside individual switch cases violates compiler rules unless explicitly wrapped in localized brace blocks `{ }` to define clear scope lifetimes.
+* **Input Fail States:** Learned that pass-through alphanumeric values targeted at numerical variables trip `std::cin.fail()`, forcing infinite looping behavior if the stream state flags aren't forcefully reset and purged via the standard limits buffer.
+
