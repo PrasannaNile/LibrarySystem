@@ -155,11 +155,23 @@ void Library::search_book(std::string& searchQuery) const {
     if(book_found == false) std::cout << "No Result!" << "\n";
 }
 
+Book* Library::search_book_by_id(const std::string& bookId) {
+    for(auto& book: books) {
+        if(book.get_bookId() == bookId) return &book;
+    }
+
+    return nullptr;
+}
+
 void Library::display_books() const {
     for (const auto& book : books) {
         std::cout << "ID: " << book.get_bookId() << " | Title: " << book.get_title() << "\n";
     }
 }
+
+
+
+
 
 
 void Library::register_user(const User& new_user) { 

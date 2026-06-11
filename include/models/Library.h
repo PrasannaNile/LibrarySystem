@@ -24,6 +24,7 @@ public:
     void save_books_to_file() const;
     void load_books_from_file();
     void search_book(std::string& searchQuery) const;
+    Book* search_book_by_id(const std::string& bookId);
     void display_books() const;
 
     void register_user(const User& new_user);
