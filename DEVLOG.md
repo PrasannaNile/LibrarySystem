@@ -60,12 +60,33 @@
 
 ## Day 7. Interactive Console UI Menu
 ### Progress Summary
-* **Built Main Application Engine:** Implemented a continuous `while(true)` application loop in `main.cpp` to keep the program active until explicitly terminated by the user.
-* **Engine Router:** Configured a native C++ block-scoped `switch` statement to seamlessly route user selections across available system functionalities.
-* **Bulletproofed Input Buffers:** Integrated customized stream cleaning routines utilizing `std::cin.clear()` and `std::cin.ignore()` to entirely resolve input skipping bugs when mixing raw `std::cin >>` reads with `std::getline()`.
-* **Crash-Proof Conversions:** Wrapped string-to-numeric casting (`std::stof`) inside robust `try-catch` blocks to protect the active run-time environment from throwing fatal unhandled exceptions on malformed alphanumeric inputs.
+- **Built Main Application Engine:** Implemented a continuous `while(true)` application loop in `main.cpp` to keep the program active until explicitly terminated by the user.
+- **Engine Router:** Configured a native C++ block-scoped `switch` statement to seamlessly route user selections across available system functionalities.
+- **Bulletproofed Input Buffers:** Integrated customized stream cleaning routines utilizing `std::cin.clear()` and `std::cin.ignore()` to entirely resolve input skipping bugs when mixing raw `std::cin >>` reads with `std::getline()`.
+- **Crash-Proof Conversions:** Wrapped string-to-numeric casting (`std::stof`) inside robust `try-catch` blocks to protect the active run-time environment from throwing fatal unhandled exceptions on malformed alphanumeric inputs.
 
 ### Technical Learnings
-* **Switch Case Variable Scoping:** Re-verified that initializing variables directly inside individual switch cases violates compiler rules unless explicitly wrapped in localized brace blocks `{ }` to define clear scope lifetimes.
-* **Input Fail States:** Learned that pass-through alphanumeric values targeted at numerical variables trip `std::cin.fail()`, forcing infinite looping behavior if the stream state flags aren't forcefully reset and purged via the standard limits buffer.
+- **Switch Case Variable Scoping:** Re-verified that initializing variables directly inside individual switch cases violates compiler rules unless explicitly wrapped in localized brace blocks `{ }` to define clear scope lifetimes.
+- **Input Fail States:** Learned that pass-through alphanumeric values targeted at numerical variables trip `std::cin.fail()`, forcing infinite looping behavior if the stream state flags aren't forcefully reset and purged via the standard limits buffer.
 
+## Day 8. Routing Seperation and Search Engine on Books
+- **Menus:** Different menus for User.ADMIN and User.STUDENT 
+- **Switch:** Seperate switch blocks on user choice base on menus
+- **Admin Menu:** Admin have some priviledge operation like add books 
+  - and registered new user
+- **Student Menu:** Student can only search for books and borrow them
+- **Sub-String Search Engine:** Implemented a real-time, case-insensitive keyword filtering module using 
+  - -`std::transform` and `std::string::find` to sweep title and author fields.
+- **Input Layer Resilience:** Secured the account generation pipeline by replacing raw input streams with explicit 
+  - exception validation (`std::runtime_error`) to catch formatting out-of-bound errors.
+- **Immediate Persistence (Transactional Integrity):** Configured automated background save triggers directly 
+  - inside data-mutation methods (`add_book`, `register_user`) to guarantee disk sync on every state modification.
+
+## Day 9: Relational Memory Linking & Pointer-Based Borrow System
+### Architectural Updates
+* **Memory Pipeline Integration:** Refactored the data-lookup strategy from passing objects by value to returning raw memory references (`Book*`) via an address-of operator (`&`) pipeline to prevent redundant object copying.
+* **Relational Cross-Linking:** Expanded the `User` domain model to maintain a private tracking collection (`std::vector<Book*> borrowedBooks`) establishing a true memory-level association between users and library inventory.
+* **Orchestrated Synchronization Handshakes:** Redesigned both `issue_book` and `return_book` routines within the `Library` controller to accept raw `User&` handles, coordinating real-time state manipulation and profile allocation in a single transaction loop.
+### Feature Enhancements
+* **Safe Pointer Retrieval:** Implemented a targeted ID scanner (`search_book_by_id`) utilizing strict `nullptr` verification boundaries to safely isolate mutable entity allocations before access manipulation.
+* **Linear Garbage Scrubbing:** Deployed the optimized Erase-Remove Idiom (`std::remove` combined with vector `.erase()`) within the user domain to cleanly purge specific memory addresses and compress storage allocations during asset registration resets.
