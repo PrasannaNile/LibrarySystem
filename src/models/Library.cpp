@@ -3,6 +3,8 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
+#include <cctype>
 
 
 Library::Library() {
@@ -120,6 +122,37 @@ void Library::load_books_from_file() {
         books.push_back(loadedBook);
 
     } 
+}
+
+void Library::search_book(std::string& searchQuery) const {
+
+    std::transform(searchQuery.begin(), searchQuery.end(), searchQuery.begin(), [](unsigned char c) {
+        return std::tolower(c);
+    });
+
+    bool book_found = false;
+
+    for(const auto& book: books) {
+        std::string title = book.get_title();
+        std::string author = book.get_author();
+
+        std::transform(title.begin(), title.end(), title.begin(), [](unsigned char c) {
+            return std::tolower(c);
+        });
+
+        std::transform(author.begin(), author.end(), author.begin(), [](unsigned char c) {
+            return std::tolower(c);
+        });
+
+        if(title.find(searchQuery) != std::string::npos || author.find(searchQuery) != std::string::npos) {
+            book_found = true;
+            std::cout << book.get_bookId() << "| " << book.get_title() << "| "
+                      << book.get_author() << "| " << book.get_price() << "| " 
+                      << static_cast<int> (book.get_status()) << "\n";
+        }
+    }
+
+    if(book_found == false) std::cout << "No Result!" << "\n";
 }
 
 void Library::display_books() const {
