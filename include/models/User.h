@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include<algorithm>
 
 class Book;
 
@@ -29,5 +30,6 @@ public:
     static void id_incrementor();
 
     void borrow_book(Book* bookPtr);
+    void return_book(Book* bookPtr);
 
 };

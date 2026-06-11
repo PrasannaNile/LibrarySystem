@@ -41,3 +41,10 @@ void User::id_incrementor() { countId++; }
 void User::borrow_book(Book* bookPtr) {
     borrowedBooks.push_back(bookPtr);
 }
+
+void User::return_book(Book* bookPtr) {
+    borrowedBooks.erase(
+        std::remove(borrowedBooks.begin(), borrowedBooks.end(), bookPtr), 
+        borrowedBooks.end()
+    );
+}
