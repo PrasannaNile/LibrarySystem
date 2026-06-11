@@ -78,7 +78,7 @@ void handleAdminRouter(int choice, Library& lib) {
             int role{2};
             try {
                 role = std::stoi(roleStr);
-                if(role != 1 && role != 2) throw std::runtime_error("Invalid role selected");;
+                if(role != 1 && role != 2) throw std::runtime_error("Invalid role selected");
                 lib.register_user(User(name, email, static_cast<UserRole> (role)));
                 std::cout << "User added successfully!\n";
             } 
@@ -90,6 +90,17 @@ void handleAdminRouter(int choice, Library& lib) {
         case 4:
             lib.display_users();
             break;
+        case 5: {
+            clearInputBuffer();
+
+            std::cout << "Title/Author of book: ";
+            std::string searchQuery{};
+            std::getline(std::cin, searchQuery);
+
+            lib.search_book(searchQuery);
+
+            break;
+        }
         case 0:
             std::cout << "Exiting system...\n";
             exit(0); // Safely terminates the app
@@ -103,6 +114,16 @@ void handleStudentRouter(int choice, Library& lib) {
         case 1:
             lib.display_books(); // For students, 1 displays books!
             break;
+        
+        case 2: {
+            clearInputBuffer();
+            std::string searchQuery{};
+            std::cout << "Title/Author of book: ";
+            std::getline(std::cin, searchQuery);
+
+            lib.search_book(searchQuery);
+        }
+
         case 0:
             std::cout << "Exiting system...\n";
             exit(0);

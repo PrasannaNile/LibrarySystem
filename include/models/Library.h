@@ -23,6 +23,7 @@ public:
     void return_book(const std::string& bookId, const std::string& userId);
     void save_books_to_file() const;
     void load_books_from_file();
+    void search_book(std::string& searchQuery) const;
     void display_books() const;
 
     void register_user(const User& new_user);
