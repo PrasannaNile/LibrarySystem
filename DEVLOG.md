@@ -81,3 +81,12 @@
   - exception validation (`std::runtime_error`) to catch formatting out-of-bound errors.
 - **Immediate Persistence (Transactional Integrity):** Configured automated background save triggers directly 
   - inside data-mutation methods (`add_book`, `register_user`) to guarantee disk sync on every state modification.
+
+## Day 9: Relational Memory Linking & Pointer-Based Borrow System
+### Architectural Updates
+* **Memory Pipeline Integration:** Refactored the data-lookup strategy from passing objects by value to returning raw memory references (`Book*`) via an address-of operator (`&`) pipeline to prevent redundant object copying.
+* **Relational Cross-Linking:** Expanded the `User` domain model to maintain a private tracking collection (`std::vector<Book*> borrowedBooks`) establishing a true memory-level association between users and library inventory.
+* **Orchestrated Synchronization Handshakes:** Redesigned both `issue_book` and `return_book` routines within the `Library` controller to accept raw `User&` handles, coordinating real-time state manipulation and profile allocation in a single transaction loop.
+### Feature Enhancements
+* **Safe Pointer Retrieval:** Implemented a targeted ID scanner (`search_book_by_id`) utilizing strict `nullptr` verification boundaries to safely isolate mutable entity allocations before access manipulation.
+* **Linear Garbage Scrubbing:** Deployed the optimized Erase-Remove Idiom (`std::remove` combined with vector `.erase()`) within the user domain to cleanly purge specific memory addresses and compress storage allocations during asset registration resets.
