@@ -37,3 +37,7 @@ std::string User::get_name() const { return name; }
 std::string User::get_email() const { return email; }
 UserRole User::get_role() const { return role; }
 void User::id_incrementor() { countId++; }
+
+void User::borrow_book(Book* bookPtr) {
+    borrowedBooks.push_back(bookPtr);
+}

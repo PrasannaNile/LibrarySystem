@@ -1,6 +1,9 @@
 # pragma once
 
 #include <string>
+#include <vector>
+
+class Book;
 
 enum class UserRole {ADMIN = 1, STUDENT = 2};
 
@@ -11,6 +14,7 @@ private:
     std::string name;
     std::string email;
     UserRole role;
+    std::vector<Book* > borrowedBooks;
     static int countId;
 
 public:
@@ -23,5 +27,7 @@ public:
     std::string get_email() const;
     UserRole get_role() const;
     static void id_incrementor();
+
+    void borrow_book(Book* bookPtr);
 
 };
