@@ -19,8 +19,8 @@ private:
 public:
     Library();
     void add_book(const Book& new_book);
-    void issue_book(const std::string& bookId, const std::string& userId);
-    void return_book(const std::string& bookId, const std::string& userId);
+    void issue_book(const std::string& bookId, User& user);
+    void return_book(const std::string& bookId, User& userId);
     void save_books_to_file() const;
     void load_books_from_file();
     void search_book(std::string& searchQuery) const;

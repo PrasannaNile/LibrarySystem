@@ -19,17 +19,19 @@ void Library::add_book(const Book& new_book) {
 }
 
 
-void Library::issue_book(const std::string& bookId, const std::string& userId) {
+void Library::issue_book(const std::string& bookId, User& user) {
     for(auto& book: books) {
         if(book.get_bookId() == bookId) {
             BookStatus curr_status = book.get_status();
             if(curr_status == BookStatus::AVAILABLE) {
 
                 std::string newTxnId = "TXN-" + std::to_string(transactions.size() + 1);
-                transactions.push_back(Transaction(newTxnId, bookId, userId, TransactionType::ISSUED));
+                transactions.push_back(Transaction(newTxnId, bookId, user.get_userId(), TransactionType::ISSUED));
 
                 book.set_status(BookStatus::LOANED);
-                std::cout << "Success: Book " << bookId << " successfully issued to user " << userId << ".\n";
+                user.borrow_book(&book);
+
+                std::cout << "Success: Book " << bookId << " successfully issued to user " << user.get_userId() << ".\n";
                 save_books_to_file();
                 return;
             } else {
@@ -43,23 +45,25 @@ void Library::issue_book(const std::string& bookId, const std::string& userId) {
 }
 
 
-void Library::return_book(const std::string& bookId, const std::string& userId) {
+void Library::return_book(const std::string& bookId, User& user) {
     for(auto& book: books) {
         if(book.get_bookId() == bookId) {
             BookStatus curr_status = book.get_status();
 
             if(curr_status != BookStatus::LOANED) {
-                std::cout << "Error: User " << userId << " not current holds the book " << bookId << ".\n";
+                std::cout << "Error: User " << user.get_userId() << " not currently holds the book " << bookId << ".\n";
                 return;
 
             } else {
-                if(is_valid_transaction(bookId, userId)) {
+                if(is_valid_transaction(bookId, user.get_userId())) {
 
                     std::string newTxnId = "TXN-" + std::to_string(transactions.size() + 1);
-                    transactions.push_back(Transaction(newTxnId, bookId, userId, TransactionType::RETURNED));
+                    transactions.push_back(Transaction(newTxnId, bookId, user.get_userId(), TransactionType::RETURNED));
                     
                     book.set_status(BookStatus::AVAILABLE);
-                    std::cout << "Success: Book " << bookId << " successfully returned by user " << userId << ".\n";
+                    user.return_book(&book);
+
+                    std::cout << "Success: Book " << bookId << " successfully returned by user " << user.get_userId() << ".\n";
                     save_books_to_file();
                     return;
                 }
