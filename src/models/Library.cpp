@@ -12,6 +12,7 @@
 Library::Library() {
     load_books_from_file();
     load_user_from_file();
+    load_transactions_from_file();
 }
 
 
