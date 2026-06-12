@@ -12,6 +12,7 @@
 Library::Library() {
     load_books_from_file();
     load_user_from_file();
+    load_transactions_from_file();
 }
 
 
@@ -107,7 +108,7 @@ void Library::load_books_from_file() {
 
     std::string line = "";
     while(std::getline(inFile, line)) {
-        if (line.empty()) {
+        if (line.empty() || line == "\r" || line == "\n") {
             continue; 
         };
 
@@ -125,6 +126,16 @@ void Library::load_books_from_file() {
         std::getline(ss, author, '|');
         std::getline(ss, priceStr, '|');
         std::getline(ss, statusStr, '|');
+
+        if (!statusStr.empty() && statusStr.back() == '\r') {
+        statusStr.pop_back();
+        }
+
+        // 4. Bulletproof Validation Check before passing to stoi
+        if (statusStr.empty() || statusStr.find_first_not_of("0123456789") != std::string::npos) {
+            std::cerr << "Warning: Skipped corrupted transaction row with invalid type field: '" << statusStr << "'\n";
+            continue; 
+        }
 
         float price = std::stof(priceStr);
         BookStatus status = static_cast<BookStatus> (std::stoi(statusStr));
@@ -234,7 +245,7 @@ void Library::load_user_from_file() {
 
     std::string line{};
     while(std::getline(inFile, line)) {
-        if(line.empty()) continue;
+        if(line.empty() || line == "\r" || line == "\n") continue;
 
         std::stringstream ss(line);
 
@@ -247,6 +258,16 @@ void Library::load_user_from_file() {
         std::getline(ss, name, '|');
         std::getline(ss, email, '|');
         std::getline(ss, roleStr, '|');
+
+        if (!roleStr.empty() && roleStr.back() == '\r') {
+        roleStr.pop_back();
+        }
+
+        // 4. Bulletproof Validation Check before passing to stoi
+        if (roleStr.empty() || roleStr.find_first_not_of("0123456789") != std::string::npos) {
+            std::cerr << "Warning: Skipped corrupted transaction row with invalid type field: '" << roleStr << "'\n";
+            continue; 
+        }
 
         UserRole role = static_cast<UserRole>(std::stoi(roleStr));
 
@@ -269,6 +290,15 @@ void Library::search_user(const std::string& userId) const {
     }
 
     std::cerr << "Error: User " << userId << " does not exist!";
+}
+
+
+User* Library::search_user_by_id(const std::string& userId) {
+    for(auto& user: users) {
+        if(user.get_userId() == userId) return &user;
+    }
+
+    return nullptr;
 }
 
 
@@ -320,7 +350,7 @@ void Library::load_transactions_from_file() {
     std::string line{};
 
     while(std::getline(inFile, line)) {
-        if(line.empty()) continue;
+        if(line.empty() || line == "\r" || line == "\n") continue;
 
         std::stringstream ss(line);
 
@@ -332,7 +362,17 @@ void Library::load_transactions_from_file() {
         std::getline(ss, transactionId, '|');
         std::getline(ss, bookId, '|');
         std::getline(ss, userId, '|');
-        std::getline(ss, typeStr, '|');
+        std::getline(ss, typeStr);
+
+        if (!typeStr.empty() && typeStr.back() == '\r') {
+            typeStr.pop_back();
+        }
+
+        // 4. Bulletproof Validation Check before passing to stoi
+        if (typeStr.empty() || typeStr.find_first_not_of("0123456789") != std::string::npos) {
+            std::cerr << "Warning: Skipped corrupted transaction row with invalid type field: '" << typeStr << "'\n";
+            continue; 
+        }
 
         TransactionType type{ static_cast<TransactionType> (std::stoi(typeStr)) };
 

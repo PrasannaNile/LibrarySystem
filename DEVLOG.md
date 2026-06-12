@@ -90,3 +90,16 @@
 ### Feature Enhancements
 * **Safe Pointer Retrieval:** Implemented a targeted ID scanner (`search_book_by_id`) utilizing strict `nullptr` verification boundaries to safely isolate mutable entity allocations before access manipulation.
 * **Linear Garbage Scrubbing:** Deployed the optimized Erase-Remove Idiom (`std::remove` combined with vector `.erase()`) within the user domain to cleanly purge specific memory addresses and compress storage allocations during asset registration resets.
+
+
+## Day 10: Application Controller Refactoring & Relational Report Engines
+
+### Architectural Updates
+* **Application Controller Pattern:** Extracted user interaction, menu rendering, and session state logic completely out of `main.cpp` into a dedicated `Router` class, reducing `main()` to a clean 3-line startup script.
+* **State-Driven Menu Routing:** Eliminated insecure and redundant manual inputs (such as prompting for a `userId` during student operations) by leveraging the persistent `currentUser` session variable inside the application router.
+* **Chronological State Reconstruction:** Integrated a live state tracking engine into the file initialization loop (`load_transactions_from_file`), allowing the system to replay transaction history sequentially on boot to build an accurate runtime state.
+
+### Feature Enhancements
+* **Student Portfolio Dashboard:** Implemented a memory-safe reporting method (`display_borrowed_books`) utilizing pointer iteration and arrow syntax (`->`) to let students view active asset allocations directly from live memory.
+* **Global Asset Ledger Optimization:** Designed a high-performance auditing mechanism utilizing a constant-time $O(1)$ Hash Map lookup scheme (`std::unordered_map<std::string, std::string>`) to match `bookId` keys cleanly with active `userId` locations.
+* **Constructor Boot Hardening:** Isolated and resolved a initialization-phase silent crash involving numeric type parsing (`std::stoi`) during structural id field formatting within the `Transaction` entity container.

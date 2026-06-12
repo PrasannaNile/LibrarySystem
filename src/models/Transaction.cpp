@@ -7,7 +7,7 @@ int Transaction::countId = 1001;
 Transaction::Transaction(const std::string& transactionId, const std::string& bookId, const std::string& userId, const TransactionType type)
     : transactionId{transactionId}, bookId{bookId}, userId{userId}, type{type}
 {
-    int numericId = std::stoi (this->transactionId.substr(1));
+    int numericId = std::stoi (this->transactionId.substr(4));
     if(numericId >= this->countId) countId += 1;
 }
 

@@ -35,6 +35,7 @@ public:
     void save_user_to_file() const;
     void load_user_from_file();
     void search_user(const std::string& userId) const;
+    User* search_user_by_id(const std::string& userId);
     void display_users() const;
 
 
