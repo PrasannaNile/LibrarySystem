@@ -1,10 +1,13 @@
 #include "models/Router.h"
 
-#include <iostream>
-#include <limits>
-#include <limits.h>
 
-bool handleNumericInput() {
+
+Router::Router()
+    : lib{}, currentUser{"Admin", "admin@lib.com", UserRole::ADMIN}
+{}
+
+
+bool Router::handleNumericInput() {
     if(std::cin.fail()) {
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -16,10 +19,11 @@ bool handleNumericInput() {
     return false;
 }
 
-void clearInputBuffer() { std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); }
+
+void Router::clearInputBuffer() { std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); }
 
 
-void show_admin_menu() {
+void Router::show_admin_menu() const {
     // ******* Menu *******
     std::cout << "1. Add Book\n";
     std::cout << "2. Display All Books\n";
@@ -30,14 +34,15 @@ void show_admin_menu() {
     std::cout << "0. Exit\n";
 }
 
-void show_student_menu() {
+
+void Router::show_student_menu() const {
     std::cout << "1. Display All Books\n";
     std::cout << "2. Search Book\n";
     std::cout << "0. Exit\n";
 }
 
 
-void handleAdminRouter(int choice, Library& lib) {
+void Router::handleAdminRouter(int choice) {
     switch(choice) {
         case 1: {
             clearInputBuffer();
@@ -119,7 +124,8 @@ void handleAdminRouter(int choice, Library& lib) {
     }
 }
 
-void handleStudentRouter(int choice, Library& lib) {
+
+void Router::handleStudentRouter(int choice) {
     switch(choice) {
         case 1:
             lib.display_books(); // For students, 1 displays books!
@@ -143,13 +149,27 @@ void handleStudentRouter(int choice, Library& lib) {
 }
 
 
+void Router::run() {
+    while (true) {
+        std::cout << "<--- Library Management System --->\n";
 
+        if (currentUser.get_role() == UserRole::ADMIN) {
+            show_admin_menu();
+        } else {
+            show_student_menu();
+        }
 
-int main() {
-    Router app;
-    app.run();
-    return 0;
+        int choice{};
+        std::cout << "Enter your choice: ";
+        std::cin >> choice;
 
+        if (handleNumericInput()) continue;
+        if (choice == 0) break; // Exit application boundary
 
-    return 0;
+        if (currentUser.get_role() == UserRole::ADMIN) {
+            handleAdminRouter(choice);
+        } else {
+            handleStudentRouter(choice);
+        }
+    }
 }
