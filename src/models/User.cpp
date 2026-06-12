@@ -1,5 +1,7 @@
 #include "models/User.h"
 
+#include <iostream>
+
 int User::countId = 1001;
 
 // constructor with auto generate userId
@@ -47,4 +49,17 @@ void User::return_book(Book* bookPtr) {
         std::remove(borrowedBooks.begin(), borrowedBooks.end(), bookPtr), 
         borrowedBooks.end()
     );
+}
+
+
+void User::display_borrowed_books() const {
+    if(borrowedBooks.size() == 0) std::cout << "No books borrowed!\n";
+    else {
+
+        for(const auto book: borrowedBooks) {
+            std::cout << book->get_bookId() << " | " << book->get_title() << " | " << book->get_author() << "| "
+                      << book->get_price() << "\n";
+        }
+
+    }
 }

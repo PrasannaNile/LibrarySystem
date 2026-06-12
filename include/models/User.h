@@ -1,5 +1,7 @@
 # pragma once
 
+#include "models\Book.h"
+
 #include <string>
 #include <vector>
 #include<algorithm>
@@ -31,5 +33,6 @@ public:
 
     void borrow_book(Book* bookPtr);
     void return_book(Book* bookPtr);
+    void display_borrowed_books() const;
 
 };
