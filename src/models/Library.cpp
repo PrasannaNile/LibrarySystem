@@ -7,11 +7,16 @@
 #include <cctype>
 
 
+// ************** System booting ***************
+
 Library::Library() {
     load_books_from_file();
     load_user_from_file();
 }
 
+
+
+// ************** Books ***************
 
 void Library::add_book(const Book& new_book) { 
     books.push_back(new_book); 
@@ -25,10 +30,11 @@ void Library::issue_book(const std::string& bookId, User& user) {
             BookStatus curr_status = book.get_status();
             if(curr_status == BookStatus::AVAILABLE) {
 
-                std::string newTxnId = "TXN-" + std::to_string(transactions.size() + 1);
-                transactions.push_back(Transaction(newTxnId, bookId, user.get_userId(), TransactionType::ISSUED));
+                transactions.push_back(Transaction(bookId, user.get_userId(), TransactionType::ISSUED));
+                save_transactions_to_file();
 
                 book.set_status(BookStatus::LOANED);
+                active_loans[bookId] = user.get_userId();
                 user.borrow_book(&book);
 
                 std::cout << "Success: Book " << bookId << " successfully issued to user " << user.get_userId() << ".\n";
@@ -57,10 +63,11 @@ void Library::return_book(const std::string& bookId, User& user) {
             } else {
                 if(is_valid_transaction(bookId, user.get_userId())) {
 
-                    std::string newTxnId = "TXN-" + std::to_string(transactions.size() + 1);
-                    transactions.push_back(Transaction(newTxnId, bookId, user.get_userId(), TransactionType::RETURNED));
+                    transactions.push_back(Transaction(bookId, user.get_userId(), TransactionType::RETURNED));
+                    save_transactions_to_file();
                     
                     book.set_status(BookStatus::AVAILABLE);
+                    active_loans.erase(bookId);
                     user.return_book(&book);
 
                     std::cout << "Success: Book " << bookId << " successfully returned by user " << user.get_userId() << ".\n";
@@ -89,6 +96,7 @@ void Library::save_books_to_file() const {
 
     outFile.close();
 }
+
 
 void Library::load_books_from_file() {
     std::ifstream inFile("books.txt");
@@ -122,11 +130,13 @@ void Library::load_books_from_file() {
         BookStatus status = static_cast<BookStatus> (std::stoi(statusStr));
         
         Book loadedBook(bookId, title, author, price, status);
-
         books.push_back(loadedBook);
+
+        if(status == BookStatus::LOANED) active_loans[bookId];
 
     } 
 }
+
 
 void Library::search_book(std::string& searchQuery) const {
 
@@ -159,6 +169,7 @@ void Library::search_book(std::string& searchQuery) const {
     if(book_found == false) std::cout << "No Result!" << "\n";
 }
 
+
 Book* Library::search_book_by_id(const std::string& bookId) {
     for(auto& book: books) {
         if(book.get_bookId() == bookId) return &book;
@@ -167,6 +178,7 @@ Book* Library::search_book_by_id(const std::string& bookId) {
     return nullptr;
 }
 
+
 void Library::display_books() const {
     for (const auto& book : books) {
         std::cout << "ID: " << book.get_bookId() << " | Title: " << book.get_title() << "\n";
@@ -174,9 +186,22 @@ void Library::display_books() const {
 }
 
 
+void Library::display_active_loans() const {
+    if (active_loans.empty()) {
+        std::cout << "No books currently loaned!\n";
+        return;
+    }
+
+    for (const auto& pair : active_loans) {
+        std::cout << "User ID: " << pair.second 
+                  << " | Holds Book ID: " << pair.first << "\n";
+    }
+}
 
 
 
+
+// ************** Users ***************
 
 void Library::register_user(const User& new_user) { 
     users.push_back(new_user); 
@@ -233,6 +258,20 @@ void Library::load_user_from_file() {
     inFile.close();
 }
 
+
+void Library::search_user(const std::string& userId) const {
+    for(const auto& user: users) {
+        if(user.get_userId() == userId) {
+            std::cout << user.get_userId() << "| " << user.get_name() << "| " 
+                      << user.get_email() << "| " << static_cast<int> (user.get_role());
+            return;
+        }
+    }
+
+    std::cerr << "Error: User " << userId << " does not exist!";
+}
+
+
 void Library::display_users() const {
     for(const auto& user: users) {
         std::cout << "ID: " << user.get_userId() << " | Title: " << user.get_name() << "\n";
@@ -241,11 +280,71 @@ void Library::display_users() const {
 
 
 
+// ************** Transactions ***************
+
 bool Library::is_valid_transaction(const std::string& bookId, const std::string& userId) {
+
+
     for(auto it = transactions.rbegin(); it != transactions.rend(); ++it) {
         if(it->get_bookId() == bookId && it->get_userId() == userId && it->get_type() == TransactionType::ISSUED) {
             return true;
         }
     }
     return false;
+}
+
+
+void Library::save_transactions_to_file() const {
+    std::ofstream outFile("transaction.txt");
+    if(!outFile) {
+        std::cerr << "Error: Denied permission or file not exist..\n";
+        return;
+    };
+
+    for(const auto& txn: transactions) {
+        outFile << txn.get_transactionId() << "|" << txn.get_bookId() << "|" 
+                << txn.get_userId() << "|" << static_cast<int> (txn.get_type()) << "\n";
+    }
+
+    outFile.close();
+}
+
+
+void Library::load_transactions_from_file() {
+    std::ifstream inFile("transaction.txt");
+    if(!inFile) {
+        std::cerr << "Error: Denied permission or file not exist..\n";
+        return;
+    }
+
+    std::string line{};
+
+    while(std::getline(inFile, line)) {
+        if(line.empty()) continue;
+
+        std::stringstream ss(line);
+
+        std::string transactionId{};
+        std::string bookId{};
+        std::string userId{};
+        std::string typeStr{};
+
+        std::getline(ss, transactionId, '|');
+        std::getline(ss, bookId, '|');
+        std::getline(ss, userId, '|');
+        std::getline(ss, typeStr, '|');
+
+        TransactionType type{ static_cast<TransactionType> (std::stoi(typeStr)) };
+
+        Transaction txn(transactionId, bookId, userId, type);
+        transactions.push_back(txn);
+
+        if (type == TransactionType::ISSUED) {
+            active_loans[bookId] = userId;
+        } else if (type == TransactionType::RETURNED) {
+            active_loans.erase(bookId);
+        }
+
+    }
+
 }
