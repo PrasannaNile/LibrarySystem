@@ -233,6 +233,20 @@ void Library::load_user_from_file() {
     inFile.close();
 }
 
+
+void Library::search_user(const std::string& userId) const {
+    for(const auto& user: users) {
+        if(user.get_userId() == userId) {
+            std::cout << user.get_userId() << "| " << user.get_name() << "| " 
+                      << user.get_email() << "| " << static_cast<int> (user.get_role());
+            return;
+        }
+    }
+
+    std::cerr << "Error: User " << userId << " does not exist!";
+}
+
+
 void Library::display_users() const {
     for(const auto& user: users) {
         std::cout << "ID: " << user.get_userId() << " | Title: " << user.get_name() << "\n";

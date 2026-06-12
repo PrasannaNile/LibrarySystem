@@ -30,6 +30,7 @@ public:
     void register_user(const User& new_user);
     void save_user_to_file() const;
     void load_user_from_file();
+    void search_user(const std::string& userId) const;
     void display_users() const;
 
 

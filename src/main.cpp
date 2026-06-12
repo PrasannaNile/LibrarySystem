@@ -98,7 +98,16 @@ void handleAdminRouter(int choice, Library& lib) {
             std::getline(std::cin, searchQuery);
 
             lib.search_book(searchQuery);
+            break;
+        }
+        case 6: {
+            clearInputBuffer();
 
+            std::cout << "UserId required: ";
+            std::string searchQuery{};
+            std::getline(std::cin, searchQuery);
+
+            lib.search_user(searchQuery);
             break;
         }
         case 0:
