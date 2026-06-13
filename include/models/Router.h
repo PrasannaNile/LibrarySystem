@@ -10,7 +10,7 @@
 class Router {
 private:
     Library lib;
-    User currentUser; // Tracks the currently active session
+    User* currentUser{}; // Tracks the currently active session
 
     // Input Validation Helpers
     bool handleNumericInput();
@@ -24,7 +24,12 @@ private:
     void handleAdminRouter(int choice);
     void handleStudentRouter(int choice);
 
+    // login and signup
+    bool handleUserLogin();
+    bool handleUserSignup();
+
 public:
     Router();   // Constructor: Coordinates system database file loads
     void run(); // Main execution engine loop
+    bool authenticate();
 };

@@ -191,9 +191,13 @@ Book* Library::search_book_by_id(const std::string& bookId) {
 
 
 void Library::display_books() const {
+    bool does_books_exist{};
     for (const auto& book : books) {
+        does_books_exist = true;
         std::cout << "ID: " << book.get_bookId() << " | Title: " << book.get_title() << "\n";
     }
+
+    if(does_books_exist == false) std::cout << "No books in library!\n";
 }
 
 
