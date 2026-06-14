@@ -19,4 +19,5 @@ add_executable(LibrarySystem
     src/models/Library.cpp
     src/models/Transaction.cpp
     src/models/Router.cpp
+    src/database/DBManager.cpp
 )
