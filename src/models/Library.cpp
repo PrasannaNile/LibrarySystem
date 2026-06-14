@@ -31,6 +31,11 @@ void Library::issue_book(const std::string& bookId, User& user) {
             BookStatus curr_status = book.get_status();
             if(curr_status == BookStatus::AVAILABLE) {
 
+                if (user.get_borrowed_books_count() >= 3) {
+                    std::cout << "Error: User " << user.get_userId() << " has reached the maximum borrowing limit of 3 books.\n";
+                    return;
+                }
+
                 transactions.push_back(Transaction(bookId, user.get_userId(), TransactionType::ISSUED));
                 save_transactions_to_file();
 
