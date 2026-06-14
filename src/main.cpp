@@ -1,4 +1,5 @@
 #include "models/Router.h"
+#include <database/DBManager.h>
 
 #include <iostream>
 #include <limits>
@@ -7,7 +8,10 @@
 
 
 int main() {
+    DBManager db;
+
     Router app;
+    app.setDatabase(db);
 
     std::cout << "<--- Library Management System --->\n";
     while(true) {

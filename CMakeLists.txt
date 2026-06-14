@@ -11,6 +11,16 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 # Tell the compiler where to find our header blueprints root
 include_directories(include)
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(MYSQL REQUIRED libmariadb)
+
+# Feed the native GCC compiler paths directly
+include_directories(${MYSQL_INCLUDE_DIRS})
+link_directories(${MYSQL_LIBRARY_DIRS})
+
+
+add_compile_definitions(CONCPP_BUILD_SHARED)
+
 # Gather our source files and create the executable named "LibrarySystem"
 add_executable(LibrarySystem 
     src/main.cpp 
@@ -21,3 +31,5 @@ add_executable(LibrarySystem
     src/models/Router.cpp
     src/database/DBManager.cpp
 )
+
+target_link_libraries(LibrarySystem PRIVATE ${MYSQL_LIBRARIES})

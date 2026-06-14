@@ -8,6 +8,11 @@ Router::Router()
 
 
 
+void Router::setDatabase(DBManager& dbManager) {
+    db = &dbManager;
+}
+
+
 bool Router::authenticate() {
     
     int choice{1};
@@ -273,6 +278,11 @@ void Router::handleStudentRouter(int choice) {
 
 
 void Router::run() {
+    if (db == nullptr) {
+        std::cerr << "[Router Error] Database reference is missing!\n";
+        return;
+    }
+
     if (currentUser == nullptr) return;
 
     while (true) {

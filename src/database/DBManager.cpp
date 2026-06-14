@@ -1,7 +1,8 @@
 #include "database/DBManager.h"
 
-#include <jdbc/mysql_driver.h>
-#include <jdbc/mysql_connection.h>
+// #include <jdbc/mysql_driver.h>
+// #include <jdbc/mysql_connection.h>
+#include <mysql.h>
 #include <iostream>
 
 // Constructor
@@ -25,30 +26,24 @@ DBManager::~DBManager() {
 
 
 bool DBManager::connect() {
-    try {
-        // Module 1: Retrieve the global MySQL driver instance
-        driver = sql::mysql::get_mysql_driver_instance();
-        
-        if (driver == nullptr) {
-            std::cerr << "[DB Error] Failed to retrieve MySQL driver instance!\n";
-            return false;
-        }
-        
-        std::cout << "[DBManager] Driver instance retrieved successfully.\n";
-        
-        // Module 2: Open the network pipe using your credentials
-        // Parameters: (Server host + port, username, password)
-        con = driver->connect("tcp://127.0.0.1:3306", "root", "Nile@26");
-        
-        // Connect specifically to our LibrarySystem database schema
-        con->setSchema("LibrarySystem");
-        
-        std::cout << "[DBManager] Securely connected to LibrarySystem database server!\n";
-
-        return true;
-    }
-    catch (sql::SQLException &e) {
-        std::cerr << "[DB Exception] Driver setup failed: " << e.what() << "\n";
+    // 1. Initialize the native connection handler instance
+    MYSQL* conn = mysql_init(nullptr);
+    if (conn == nullptr) {
+        std::cerr << "[DB Error] Failed to initialize MySQL handler!\n";
         return false;
     }
+
+    // 2. Establish the secure connection pipe to localhost
+    // Parameters: handler, host, user, password, database, port, unix_socket, client_flag
+    if (!mysql_real_connect(conn, "127.0.0.1", "root", "Nile@26", "LibrarySystem", 3306, nullptr, 0)) {
+        std::cerr << "[DB Exception] Driver setup failed: " << mysql_error(conn) << "\n";
+        mysql_close(conn);
+        return false;
+    }
+
+    std::cout << "[DBManager] Securely connected to LibrarySystem database server!\n";
+    
+    // Note: Store 'conn' inside your class state (e.g., this->connection = conn;) 
+    // so your other database query functions can reuse it later!
+    return true;
 }
