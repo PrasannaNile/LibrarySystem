@@ -116,3 +116,8 @@
 * **Unique Email Check:** Implemented a `std::unordered_map<std::string, bool>` lookup cache, reducing signup email duplication checks to instant $O(1)$ complexity.
 * **Identity Alignment Fix:** Restructured `handleUserLogin` to verify incoming credentials directly against the targeting user record attributes to protect against identity spoofing.
 * **Asset Ceiling Constraints:** Injected transactional validation gates inside `Library::issue_book` to drop borrow attempts if an account holds $\ge 3$ active loans.
+
+
+## Day 12 -
+- **DataFlow:** User Interaction ➔ Router ➔ Library ➔ In-Memory Vectors ➔ Text Files
+- **Modified DataFlow:** User Interaction ➔ Router ➔ Library ➔ DBManager ➔ Relational Database Tables
