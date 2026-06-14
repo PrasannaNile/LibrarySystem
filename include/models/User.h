@@ -21,6 +21,7 @@ private:
     static int countId;
 
 public:
+    User() = default;
     User(const std::string& _name, const std::string& _email, const UserRole& _role);
     User(const std::string& _userId, const std::string& _name, const std::string& _email, const UserRole& _role);
     User(const User& other);

@@ -17,6 +17,7 @@ private:
     std::vector<User> users;
     std::vector<Transaction> transactions;
     std::unordered_map<std::string, std::string> active_loans;
+    std::unordered_map<std::string, bool> registered_emails;
     
 
 public:
@@ -31,7 +32,8 @@ public:
     void display_books() const;
     void display_active_loans() const;
 
-    void register_user(const User& new_user);
+    User* register_user(const User& new_user);
+    bool is_email_registered(const std::string& email) const;
     void save_user_to_file() const;
     void load_user_from_file();
     void search_user(const std::string& userId) const;

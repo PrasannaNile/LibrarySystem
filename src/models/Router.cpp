@@ -3,8 +3,94 @@
 
 
 Router::Router()
-    : lib{}, currentUser{"Student", "student@lib.com", UserRole::STUDENT}
+    : lib{}
 {}
+
+
+
+bool Router::authenticate() {
+    
+    int choice{1};
+
+    while(true) {
+        std::cout << "\n===============================\n";
+        std::cout << "1. Login\n";
+        std::cout << "2. Signup\n";
+        std::cout << "0. Exit System Completely\n";
+        std::cout << "===============================\n";
+        
+        std::cout << "Enter your choice: "; 
+        std::cin >> choice;
+
+        if (handleNumericInput()) continue;
+
+        if(choice == 1) {
+            return handleUserLogin();
+        }
+        else if(choice == 2) {
+            return handleUserSignup();
+        } else {
+            std::cout << "System Shut down!\n";
+            exit(0);
+        }
+    }
+
+    
+    
+    return false;
+        
+}
+
+
+bool Router::handleUserLogin() {
+    clearInputBuffer();
+
+    std::string userId{};
+    std::cout << "UserId: ";
+    std::getline(std::cin, userId);
+
+    std::string email{};
+    std::cout << "Email: ";
+    std::getline(std::cin, email);
+
+    User* user = lib.search_user_by_id(userId);
+
+    if(user && user->get_userId() == userId && user->get_email() == email) {
+        std::cout << "Successful login\n";
+        currentUser = user;
+        return true;
+    } else {
+        std::cout << "Invalid userId!\n";
+    }
+
+    return false;
+}
+
+
+bool Router::handleUserSignup() {
+    clearInputBuffer();
+
+    std::string name;
+    std::string email;
+    
+    std::cout << "Enter name: ";
+    std::getline(std::cin, name);
+
+    std::cout << "Enter email: ";
+    std::getline(std::cin, email);
+
+    if(lib.is_email_registered(email)) {
+        std::cout << "Email already exist!\n";
+        return false;
+    };
+
+    User new_user(name, email, UserRole::STUDENT);
+    currentUser = lib.register_user(new_user);
+
+    std::cout << "Successful signup.\n";
+
+    return true;
+}
 
 
 bool Router::handleNumericInput() {
@@ -31,7 +117,7 @@ void Router::show_admin_menu() const {
     std::cout << "4. Display All Users\n";
     std::cout << "5. Search Book\n";
     std::cout << "6. Search User\n";
-    std::cout << "0. Exit\n";
+    std::cout << "0. Logout\n";
 }
 
 
@@ -41,7 +127,7 @@ void Router::show_student_menu() const {
     std::cout << "3. Borrow / Issue a Book\n";
     std::cout << "4. Return a Book\n";
     std::cout << "5. View My Borrowed Books Portfolio\n"; // Day 10 Module 1 hook
-    std::cout << "0. Exit\n";
+    std::cout << "0. Logout\n";
 }
 
 
@@ -76,19 +162,28 @@ void Router::handleAdminRouter(int choice) {
         case 3: {
             clearInputBuffer();
             std::string name;
-            std::cout << "Name: "; std::getline(std::cin, name);
+            std::cout << "Name: "; 
+            std::getline(std::cin, name);
 
             std::string email;
-            std::cout << "Email: "; std::getline(std::cin, email);
+            std::cout << "Email: "; 
+            std::getline(std::cin, email);
+
+            if(lib.is_email_registered(email)) {
+                std::cout << "Email already exist!\n";
+                break;
+            };
 
             std::string roleStr;
-            std::cout << "Role(ADMIN: 1 , STUDENT: 2): "; std::getline(std::cin, roleStr);
+            std::cout << "Role(ADMIN: 1 , STUDENT: 2): "; 
+            std::getline(std::cin, roleStr);
 
             int role{2};
             try {
                 role = std::stoi(roleStr);
                 if(role != 1 && role != 2) throw std::runtime_error("Invalid role selected");
-                lib.register_user(User(name, email, static_cast<UserRole> (role)));
+                User* new_user = lib.register_user(User(name, email, static_cast<UserRole> (role)));
+
                 std::cout << "User added successfully!\n";
             } 
             catch(const std::exception& e) {
@@ -150,7 +245,7 @@ void Router::handleStudentRouter(int choice) {
             std::string bookId{};
             std::getline(std::cin, bookId);
 
-            lib.issue_book(bookId, currentUser);
+            lib.issue_book(bookId, *currentUser);
             break;
         }
 
@@ -160,12 +255,12 @@ void Router::handleStudentRouter(int choice) {
             std::string bookId{};
             std::getline(std::cin, bookId);
 
-            lib.return_book(bookId, currentUser);
+            lib.return_book(bookId, *currentUser);
             break;
         }
 
         case 5: 
-            currentUser.display_borrowed_books();
+            currentUser->display_borrowed_books();
             break;
 
         case 0:
@@ -178,10 +273,10 @@ void Router::handleStudentRouter(int choice) {
 
 
 void Router::run() {
-    while (true) {
-        std::cout << "<--- Library Management System --->\n";
+    if (currentUser == nullptr) return;
 
-        if (currentUser.get_role() == UserRole::ADMIN) {
+    while (true) {
+        if (currentUser->get_role() == UserRole::ADMIN) {
             show_admin_menu();
         } else {
             show_student_menu();
@@ -194,7 +289,7 @@ void Router::run() {
         if (handleNumericInput()) continue;
         if (choice == 0) break; // Exit application boundary
 
-        if (currentUser.get_role() == UserRole::ADMIN) {
+        if (currentUser->get_role() == UserRole::ADMIN) {
             handleAdminRouter(choice);
         } else {
             handleStudentRouter(choice);

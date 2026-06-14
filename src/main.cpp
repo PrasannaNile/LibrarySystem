@@ -8,7 +8,11 @@
 
 int main() {
     Router app;
-    app.run();
+
+    std::cout << "<--- Library Management System --->\n";
+    while(true) {
+        if(app.authenticate()) app.run();
+    }
     return 0;
 
 

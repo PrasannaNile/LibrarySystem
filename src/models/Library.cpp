@@ -191,9 +191,13 @@ Book* Library::search_book_by_id(const std::string& bookId) {
 
 
 void Library::display_books() const {
+    bool does_books_exist{};
     for (const auto& book : books) {
+        does_books_exist = true;
         std::cout << "ID: " << book.get_bookId() << " | Title: " << book.get_title() << "\n";
     }
+
+    if(does_books_exist == false) std::cout << "No books in library!\n";
 }
 
 
@@ -214,9 +218,17 @@ void Library::display_active_loans() const {
 
 // ************** Users ***************
 
-void Library::register_user(const User& new_user) { 
+User* Library::register_user(const User& new_user) { 
     users.push_back(new_user); 
+    registered_emails[new_user.get_email()] = true;
     save_user_to_file();
+
+    return &users.back();
+}
+
+
+bool Library::is_email_registered(const std::string& email) const {
+    return registered_emails.find(email) != registered_emails.end();
 }
 
 
@@ -272,6 +284,7 @@ void Library::load_user_from_file() {
         UserRole role = static_cast<UserRole>(std::stoi(roleStr));
 
         User loadedUser(userId, name, email, role);
+        registered_emails[email] = true;
         users.push_back(loadedUser);
 
     }
