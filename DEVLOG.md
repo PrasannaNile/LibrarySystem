@@ -103,3 +103,16 @@
 * **Student Portfolio Dashboard:** Implemented a memory-safe reporting method (`display_borrowed_books`) utilizing pointer iteration and arrow syntax (`->`) to let students view active asset allocations directly from live memory.
 * **Global Asset Ledger Optimization:** Designed a high-performance auditing mechanism utilizing a constant-time $O(1)$ Hash Map lookup scheme (`std::unordered_map<std::string, std::string>`) to match `bookId` keys cleanly with active `userId` locations.
 * **Constructor Boot Hardening:** Isolated and resolved a initialization-phase silent crash involving numeric type parsing (`std::stoi`) during structural id field formatting within the `Transaction` entity container.
+
+
+## DEVLOG: Day 11 — Authentication Core & Guardrails Securing
+
+### ⚙️ Architecture & Flow Refactors
+* **Master State Loop:** Moved application lifecycle control to `main.cpp` using a `while(true)` engine block. 
+* **Pristine Logouts:** Handled session termination (`choice == 0`) by clearing the `currentUser` pointer to `nullptr` and breaking to the master loop, prompting a clean re-login instead of shutting down.
+* **Memory Link Realignment:** Fixed stack allocation traps by converting `currentUser` into a direct `User*` pointer tracking live memory inside `Library::users`.
+
+### 🛡️ Security Validation Walls
+* **Unique Email Check:** Implemented a `std::unordered_map<std::string, bool>` lookup cache, reducing signup email duplication checks to instant $O(1)$ complexity.
+* **Identity Alignment Fix:** Restructured `handleUserLogin` to verify incoming credentials directly against the targeting user record attributes to protect against identity spoofing.
+* **Asset Ceiling Constraints:** Injected transactional validation gates inside `Library::issue_book` to drop borrow attempts if an account holds $\ge 3$ active loans.

@@ -35,5 +35,6 @@ public:
     void borrow_book(Book* bookPtr);
     void return_book(Book* bookPtr);
     void display_borrowed_books() const;
+    int get_borrowed_books_count();
 
 };
