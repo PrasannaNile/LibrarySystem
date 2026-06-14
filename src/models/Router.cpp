@@ -49,9 +49,13 @@ bool Router::handleUserLogin() {
     std::cout << "UserId: ";
     std::getline(std::cin, userId);
 
+    std::string email{};
+    std::cout << "Email: ";
+    std::getline(std::cin, email);
+
     User* user = lib.search_user_by_id(userId);
 
-    if(user && user->get_userId() == userId) {
+    if(user && user->get_userId() == userId && user->get_email() == email) {
         std::cout << "Successful login\n";
         currentUser = user;
         return true;
@@ -64,6 +68,27 @@ bool Router::handleUserLogin() {
 
 
 bool Router::handleUserSignup() {
+    clearInputBuffer();
+
+    std::string name;
+    std::string email;
+    
+    std::cout << "Enter name: ";
+    std::getline(std::cin, name);
+
+    std::cout << "Enter email: ";
+    std::getline(std::cin, email);
+
+    if(lib.is_email_registered(email)) {
+        std::cout << "Email already exist!\n";
+        return false;
+    };
+
+    User new_user(name, email, UserRole::STUDENT);
+    currentUser = lib.register_user(new_user);
+
+    std::cout << "Successful signup.\n";
+
     return true;
 }
 
@@ -137,19 +162,28 @@ void Router::handleAdminRouter(int choice) {
         case 3: {
             clearInputBuffer();
             std::string name;
-            std::cout << "Name: "; std::getline(std::cin, name);
+            std::cout << "Name: "; 
+            std::getline(std::cin, name);
 
             std::string email;
-            std::cout << "Email: "; std::getline(std::cin, email);
+            std::cout << "Email: "; 
+            std::getline(std::cin, email);
+
+            if(lib.is_email_registered(email)) {
+                std::cout << "Email already exist!\n";
+                break;
+            };
 
             std::string roleStr;
-            std::cout << "Role(ADMIN: 1 , STUDENT: 2): "; std::getline(std::cin, roleStr);
+            std::cout << "Role(ADMIN: 1 , STUDENT: 2): "; 
+            std::getline(std::cin, roleStr);
 
             int role{2};
             try {
                 role = std::stoi(roleStr);
                 if(role != 1 && role != 2) throw std::runtime_error("Invalid role selected");
-                lib.register_user(User(name, email, static_cast<UserRole> (role)));
+                User* new_user = lib.register_user(User(name, email, static_cast<UserRole> (role)));
+
                 std::cout << "User added successfully!\n";
             } 
             catch(const std::exception& e) {
