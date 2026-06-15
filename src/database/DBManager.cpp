@@ -2,7 +2,6 @@
 
 // #include <jdbc/mysql_driver.h>
 // #include <jdbc/mysql_connection.h>
-#include <mysql.h>
 #include <iostream>
 
 // Constructor
@@ -25,19 +24,20 @@ DBManager::~DBManager() {
 }
 
 
+
 bool DBManager::connect() {
     // 1. Initialize the native connection handler instance
-    MYSQL* conn = mysql_init(nullptr);
-    if (conn == nullptr) {
+    this->con = mysql_init(nullptr);
+    if (con == nullptr) {
         std::cerr << "[DB Error] Failed to initialize MySQL handler!\n";
         return false;
     }
 
     // 2. Establish the secure connection pipe to localhost
     // Parameters: handler, host, user, password, database, port, unix_socket, client_flag
-    if (!mysql_real_connect(conn, "127.0.0.1", "root", "Nile@26", "LibrarySystem", 3306, nullptr, 0)) {
-        std::cerr << "[DB Exception] Driver setup failed: " << mysql_error(conn) << "\n";
-        mysql_close(conn);
+    if (!mysql_real_connect(con, "127.0.0.1", "root", "Nile@26", "LibrarySystem", 3306, nullptr, 0)) {
+        std::cerr << "[DB Exception] Driver setup failed: " << mysql_error(con) << "\n";
+        mysql_close(con);
         return false;
     }
 
@@ -47,3 +47,7 @@ bool DBManager::connect() {
     // so your other database query functions can reuse it later!
     return true;
 }
+
+
+
+MYSQL* DBManager::get_connection() const { return con; } 

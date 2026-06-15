@@ -15,6 +15,7 @@ Transaction::Transaction(const std::string& bookId, const std::string& userId, c
     : bookId{bookId}, userId{userId}, type{type}
 {
     this->transactionId = "TXN" + std::to_string(countId);
+    id_incrementor();
 }
 
 
