@@ -1,5 +1,7 @@
 #pragma once
 
+#include <mysql.h>
+
 namespace sql {
     class Connection;
     namespace mysql {
@@ -11,10 +13,12 @@ namespace sql {
 class DBManager {
 private:
     sql::mysql::MySQL_Driver* driver; // The driver factory instance
-    sql::Connection* con;             // The live server socket pointer
+    MYSQL* con;             // The live server socket pointer
     
 public:
-    bool connect(); // Private engine that runs the handshake protocol
     DBManager();  // Opens socket on application boot
     ~DBManager(); // Safely teardowns socket on exit
+
+    bool connect(); // Private engine that runs the handshake protocol
+    MYSQL* get_connection() const;
 };

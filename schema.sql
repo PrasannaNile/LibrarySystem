@@ -1,6 +1,11 @@
 CREATE DATABASE IF NOT EXISTS LibrarySystem;
 USE LibrarySystem;
 
+DROP TABLE IF EXISTS Transaction;
+DROP TABLE IF EXISTS User;
+DROP TABLE IF EXISTS Book;
+
+
 # ******************* User Schema *******************
 CREATE TABLE IF NOT EXISTS User (
 	userId VARCHAR(50) PRIMARY KEY,
@@ -16,6 +21,7 @@ CREATE TABLE IF NOT EXISTS Book (
 	bookId VARCHAR(50) PRIMARY KEY,
     title VARCHAR(100) NOT NULL,
     author VARCHAR(100) NOT NULL,
+    price DECIMAL(4, 2),
     status ENUM("AVAILABLE", "LOANED", "RESERVED", "LOST") NOT NULL DEFAULT "AVAILABLE"
 );
 # ******************* Book Schema *******************
@@ -33,4 +39,22 @@ CREATE TABLE IF NOT EXISTS Transaction (
 ); 
 # ******************* Transaction Schema *******************
 
-SHOW TABLES;
+INSERT INTO USER (userId, name, email, role)
+VALUES ("U1001", "Admin", "admin@gmail.com", "ADMIN");
+
+
+# ******************* Borrowed_Books Schema *******************
+-- CREATE TABLE IF NOT EXISTS ActiveLoans (
+-- 	
+-- );
+# ******************* Borrowed_Books Schema *******************
+
+SELECT * FROM User;
+SELECT * FROM Book;
+SELECT * FROM Transaction;
+
+INSERT INTO BOOK
+VALUES ("B1002", "BOOK2", "AUTHOR2", 89.99, "AVAILABLE");
+
+DROP TABLE BOOK;
+DROP TABLE TRANSACTION;

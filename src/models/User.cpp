@@ -45,11 +45,6 @@ void User::borrow_book(Book* bookPtr) {
 }
 
 
-int User::get_borrowed_books_count() {
-    return borrowedBooks.size();
-}
-
-
 void User::return_book(Book* bookPtr) {
     borrowedBooks.erase(
         std::remove(borrowedBooks.begin(), borrowedBooks.end(), bookPtr), 

@@ -9,9 +9,10 @@
 
 int main() {
     DBManager db;
+    db.connect();
 
     Router app;
-    app.setDatabase(db);
+    app.setDatabase(&db);
 
     std::cout << "<--- Library Management System --->\n";
     while(true) {

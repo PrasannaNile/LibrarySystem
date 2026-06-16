@@ -3,13 +3,25 @@
 
 
 Router::Router()
-    : lib{}
+    : lib{nullptr}
 {}
 
 
+Router::~Router() {
+    if(this->lib) {
+        delete this->lib;
+        this->lib = nullptr;
+    }
+}
 
-void Router::setDatabase(DBManager& dbManager) {
-    db = &dbManager;
+
+void Router::setDatabase(DBManager* dbManager) {
+    this->db = dbManager;
+    this->lib = new Library(this->db);
+
+    // this->lib->load_books_from_database();
+    // this->lib->load_users_from_database();
+    // this->lib->load_transactions_from_database();
 }
 
 
@@ -58,7 +70,7 @@ bool Router::handleUserLogin() {
     std::cout << "Email: ";
     std::getline(std::cin, email);
 
-    User* user = lib.search_user_by_id(userId);
+    User* user = lib->search_user_by_id(userId);
 
     if(user && user->get_userId() == userId && user->get_email() == email) {
         std::cout << "Successful login\n";
@@ -84,13 +96,17 @@ bool Router::handleUserSignup() {
     std::cout << "Enter email: ";
     std::getline(std::cin, email);
 
-    if(lib.is_email_registered(email)) {
+    if(lib->is_email_registered(email)) {
         std::cout << "Email already exist!\n";
         return false;
     };
 
-    User new_user(name, email, UserRole::STUDENT);
-    currentUser = lib.register_user(new_user);
+    std::string userId = lib->generate_next_user_id();
+    User new_user(userId, name, email, UserRole::STUDENT);
+    User* registered_ptr = lib->register_user(new_user);
+
+    if(registered_ptr) currentUser = registered_ptr;
+    else return false;
 
     std::cout << "Successful signup.\n";
 
@@ -132,6 +148,7 @@ void Router::show_student_menu() const {
     std::cout << "3. Borrow / Issue a Book\n";
     std::cout << "4. Return a Book\n";
     std::cout << "5. View My Borrowed Books Portfolio\n"; // Day 10 Module 1 hook
+    std::cout << "6. View all active(currently borrowed) books\n";
     std::cout << "0. Logout\n";
 }
 
@@ -152,7 +169,9 @@ void Router::handleAdminRouter(int choice) {
             float price{};
             try {
                 price = std::stof(priceStr);
-                lib.add_book(Book(title, author, price)); 
+
+                std::string bookId = lib->generate_next_book_id();
+                lib->add_book(Book(bookId, title, author, price, BookStatus::AVAILABLE)); 
                 std::cout << "Book added successfully!\n";
             } 
             catch (const std::exception& e) {
@@ -162,7 +181,7 @@ void Router::handleAdminRouter(int choice) {
             break;
         }
         case 2:
-            lib.display_books();
+            lib->display_books();
             break;
         case 3: {
             clearInputBuffer();
@@ -174,7 +193,7 @@ void Router::handleAdminRouter(int choice) {
             std::cout << "Email: "; 
             std::getline(std::cin, email);
 
-            if(lib.is_email_registered(email)) {
+            if(lib->is_email_registered(email)) {
                 std::cout << "Email already exist!\n";
                 break;
             };
@@ -187,7 +206,8 @@ void Router::handleAdminRouter(int choice) {
             try {
                 role = std::stoi(roleStr);
                 if(role != 1 && role != 2) throw std::runtime_error("Invalid role selected");
-                User* new_user = lib.register_user(User(name, email, static_cast<UserRole> (role)));
+                std::string userId = lib->generate_next_user_id();
+                User* new_user = lib->register_user(User(userId, name, email, static_cast<UserRole> (role)));
 
                 std::cout << "User added successfully!\n";
             } 
@@ -197,7 +217,7 @@ void Router::handleAdminRouter(int choice) {
             break;
         }
         case 4:
-            lib.display_users();
+            lib->display_users();
             break;
         case 5: {
             clearInputBuffer();
@@ -206,17 +226,17 @@ void Router::handleAdminRouter(int choice) {
             std::string searchQuery{};
             std::getline(std::cin, searchQuery);
 
-            lib.search_book(searchQuery);
+            lib->search_books_by_substr(searchQuery);
             break;
         }
         case 6: {
             clearInputBuffer();
 
-            std::cout << "UserId required: ";
             std::string searchQuery{};
+            std::cout << "UserId/Name of book: ";
             std::getline(std::cin, searchQuery);
 
-            lib.search_user(searchQuery);
+            lib->search_user_by_substr(searchQuery);
             break;
         }
         case 0:
@@ -231,16 +251,16 @@ void Router::handleAdminRouter(int choice) {
 void Router::handleStudentRouter(int choice) {
     switch(choice) {
         case 1:
-            lib.display_books(); // For students, 1 displays books!
+            lib->display_books(); // For students, 1 displays books!
             break;
         
         case 2: {
             clearInputBuffer();
             std::string searchQuery{};
-            std::cout << "Title/Author of book: ";
+            std::cout << "BookId/Title/Author of book: ";
             std::getline(std::cin, searchQuery);
 
-            lib.search_book(searchQuery);
+            lib->search_books_by_substr(searchQuery);
             break;
         }
 
@@ -250,7 +270,7 @@ void Router::handleStudentRouter(int choice) {
             std::string bookId{};
             std::getline(std::cin, bookId);
 
-            lib.issue_book(bookId, *currentUser);
+            lib->issue_book(bookId, *currentUser);
             break;
         }
 
@@ -260,12 +280,16 @@ void Router::handleStudentRouter(int choice) {
             std::string bookId{};
             std::getline(std::cin, bookId);
 
-            lib.return_book(bookId, *currentUser);
+            lib->return_book(bookId, *currentUser);
             break;
         }
 
         case 5: 
-            currentUser->display_borrowed_books();
+            lib->display_borrow_books(currentUser->get_userId());
+            break;
+
+        case 6:
+            lib->display_active_loans();
             break;
 
         case 0:

@@ -10,9 +10,9 @@
 
 class Router {
 private:
-    Library lib;
+    Library* lib{};
     User* currentUser{}; // Tracks the currently active session
-    DBManager* db;
+    DBManager* db{};
 
     // Input Validation Helpers
     bool handleNumericInput();
@@ -32,7 +32,9 @@ private:
 
 public:
     Router();   // Constructor: Coordinates system database file loads
+    ~Router();
     void run(); // Main execution engine loop
     bool authenticate();
-    void setDatabase(DBManager& dbManager);
+    void setDatabase(DBManager* dbManager);
+
 };
