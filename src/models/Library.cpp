@@ -116,7 +116,6 @@ void Library::issue_book(const std::string& bookId, User& user) {
 }
 
 
-
 void Library::return_book(const std::string& bookId, User& user) {
     for(auto& book: books) {
         if(book.get_bookId() == bookId) {
@@ -147,7 +146,7 @@ void Library::return_book(const std::string& bookId, User& user) {
     std::cout << "Error: Book " << bookId << " not found in library." << "\n";
 }
 
-
+// old file system
 void Library::save_books_to_file() const {
     std::ofstream outFile ("books.txt");
     if(!outFile) {
@@ -163,7 +162,7 @@ void Library::save_books_to_file() const {
     outFile.close();
 }
 
-
+// old file system
 void Library::load_books_from_file() {
     std::ifstream inFile("books.txt");
     if(!inFile) {
@@ -264,7 +263,7 @@ void Library::load_books_from_database() {
     std::cout << "[Library] Successfully loaded " << books.size() << " books from MariaDB.\n";
 }
 
-
+// old file system
 void Library::search_book(std::string& searchQuery) const {
 
     std::transform(searchQuery.begin(), searchQuery.end(), searchQuery.begin(), [](unsigned char c) {
@@ -297,10 +296,88 @@ void Library::search_book(std::string& searchQuery) const {
 }
 
 
-Book* Library::search_book_by_id(const std::string& bookId) {
-    for(auto& book: books) {
-        if(book.get_bookId() == bookId) return &book;
+void Library::search_books_by_substr(std::string& searchQuery) {
+    if(this->db == nullptr || this->db->get_connection() == nullptr) {
+        std::cerr << "[Library Error] Cannot search books by searchQuery. Database connection is null.\n";
+        return;
     }
+
+    std::stringstream queryStream;
+    queryStream << "SELECT bookId, title, author FROM Book "
+                << "WHERE bookId LIKE '%" << searchQuery << "%'"
+                << "OR title LIKE '%" << searchQuery << "%'"
+                << "OR author LIKE '%" << searchQuery << "%';";
+
+    std::string query = queryStream.str();
+    if(mysql_query(this->db->get_connection(), query.c_str()) != 0) {
+        std::cerr << "[Library Error] Query Failed: " << mysql_error(this->db->get_connection()) << "\n";
+        return;
+    }
+
+    MYSQL_RES* result = mysql_store_result(this->db->get_connection());
+    if(result == nullptr) return;
+
+    auto no_of_rows = mysql_num_rows(result);
+    if(no_of_rows == 0) {
+        std::cout << "[Library Error] No matching books for subQuery\n\n";
+        return;
+    }
+
+    MYSQL_ROW row;
+    while((row = mysql_fetch_row(result)) != 0) {
+        std::cout << row[0] << "| " << row[1] << "| " << row[2] << "\n";
+    }
+
+    mysql_free_result(result);
+
+}
+
+
+Book* Library::search_book_by_id(const std::string& bookId) const {
+    if(this->db == nullptr || this->db->get_connection() == nullptr) {
+        std::cerr << "[Library Error] Cannot search book by id. Database connection is null.\n";
+        return nullptr;
+    }
+
+    std::stringstream queryStream;
+    queryStream << "SELECT bookId, title, author, price, status FROM Book WHERE bookId = '" << bookId << "';";
+    std::string query = queryStream.str();
+
+    if(mysql_query(this->db->get_connection(), query.c_str()) != 0) {
+        std::cerr << "\n[Database Error] Failed to search book into MariaDB: " 
+                  << mysql_error(this->db->get_connection()) << "\n\n";
+        return nullptr;
+    }
+
+    MYSQL_RES* result = mysql_store_result(this->db->get_connection());
+    if(result == nullptr) return nullptr;
+
+    auto no_of_rows = mysql_num_rows(result);
+    if(no_of_rows == 0) {
+        std::cerr << "[Library Error] No book with Id" << bookId << "\n";
+        return nullptr;
+    }
+    MYSQL_ROW row;
+
+    row = mysql_fetch_row(result);
+    std::string bId = row[0] ? row[0] : "";
+    std::string title = row[1] ? row[1] : "";
+    std::string author = row[2] ? row[2] : "";
+    std::string priceStr = row[3] ? row[3] : "";
+    std::string statusStr = row[4] ? row[4] : "";
+
+    BookStatus status = BookStatus::AVAILABLE;
+    if(statusStr == "RESERVED") status = BookStatus::RESERVED;
+    else if(statusStr == "LOANED") status = BookStatus::LOANED;
+    else if(statusStr == "LOST") status = BookStatus::LOST;
+
+    try {
+        float price = std::stof(priceStr);
+        Book* search_book = new Book(bId, title, author, price, status);
+
+        std::cout << "Book with id " << bookId << " found\n";
+        return search_book;
+    } catch(const std::exception&) {}
 
     return nullptr;
 }
@@ -345,15 +422,43 @@ void Library::display_books() const {
 
 
 void Library::display_active_loans() const {
-    if (active_loans.empty()) {
-        std::cout << "No books currently loaned!\n";
+    if(this->db == nullptr || this->db->get_connection() == nullptr) {
+        std::cout << "[Database Error] Cannot display active loans. Database connection is null.\n";
         return;
     }
 
-    for (const auto& pair : active_loans) {
-        std::cout << "User ID: " << pair.second 
-                  << " | Holds Book ID: " << pair.first << "\n";
+    std::stringstream queryStream;
+    queryStream << "SELECT bookId, userId "
+                << "FROM Transaction T1 "
+                << "WHERE type = 'ISSUED' "
+                << "AND T1.transactionId NOT IN ("
+                    << "SELECT T2.transactionId "
+                    << "FROM Transaction T2 "
+                    << "WHERE type = 'RETURNED' "
+                    << "AND T1.transactionId < T2.transactionId"
+                << ");";
+    std::string query = queryStream.str();
+    if(mysql_query(this->db->get_connection(), query.c_str()) != 0) {
+        std::cerr << "\n[Database Error] Failed to display active book from MariaDB: " 
+                  << mysql_error(this->db->get_connection()) << "\n\n";
+        return;
     }
+
+    MYSQL_RES* result = mysql_store_result(this->db->get_connection());
+    if(result == nullptr) return;
+
+    auto no_of_rows = mysql_num_rows(result);
+    if(no_of_rows == 0) {
+        std::cerr << "No active books. All books are available\n\n";
+        return;
+    }
+
+    MYSQL_ROW row;
+    while((row = mysql_fetch_row(result)) != 0) {
+        std::cout << row[0] << "| " << row[1] << "\n";
+    }
+
+    mysql_free_result(result);
 }
 
 
@@ -406,7 +511,7 @@ std::string Library::generate_next_book_id() {
 }
 
 
-int Library::get_borrowed_books_count(const std::string& userId) {
+int Library::get_borrowed_books_count(const std::string& userId) const {
     if(this->db == nullptr || this->db->get_connection() == nullptr) {
         std::cerr << "[Library Error] Cannot count borrow book. Database connection is null.\n";
         return 0;
@@ -427,7 +532,7 @@ int Library::get_borrowed_books_count(const std::string& userId) {
     std::string query = queryStream.str();
 
     if(mysql_query(this->db->get_connection(), query.c_str()) != 0) {
-        std::cerr << "\n[Database Error] Failed to insert book into MariaDB: " 
+        std::cerr << "\n[Database Error] Failed to count borrow book into MariaDB: " 
                   << mysql_error(this->db->get_connection()) << "\n\n";
         return 0;
     }
@@ -445,6 +550,55 @@ int Library::get_borrowed_books_count(const std::string& userId) {
     return count;
 }
 
+
+void Library::display_borrow_books(const std::string& userId) const {
+    if(this->db == nullptr || this->db->get_connection() == nullptr) {
+        std::cerr << "[Library Error] Cannot count borrow book. Database connection is null.\n";
+        return;
+    }
+
+    std::stringstream queryStream;
+    queryStream << "SELECT t1.bookId "
+                << "FROM Transaction t1 "
+                << "WHERE t1.userId = " << "'" << userId << "' "  
+                << "AND t1.type = 'ISSUED' " 
+                << "AND t1.bookId NOT IN ( "
+                <<    "SELECT t2.bookId " 
+                <<    "FROM Transaction t2 " 
+                << "    WHERE t2.userId = '" << userId << "' "
+                <<        "AND t2.type = 'RETURNED' " 
+                <<        "AND t2.transactionId > t1.transactionId "
+                << ");";
+    std::string query = queryStream.str();
+
+    if(mysql_query(this->db->get_connection(), query.c_str()) != 0) {
+        std::cerr << "\n[Database Error] Failed to insert book into MariaDB: " 
+                  << mysql_error(this->db->get_connection()) << "\n\n";
+        return;
+    }
+
+    MYSQL_RES* result = mysql_store_result(this->db->get_connection());
+    if(result == nullptr) return;
+
+    auto no_of_rows = mysql_num_rows(result);
+    if(no_of_rows == 0) {
+        std::cout << "[Library Error] No active books are borrowed!\n\n";
+    }
+
+    MYSQL_ROW row;
+    while((row = mysql_fetch_row(result)) != 0) {
+        std::string bookId = row[0] ? row[0] : "";
+        Book* book = search_book_by_id(bookId);
+
+        if(book) {
+            std::cout << book->get_bookId() << "| " << book->get_title() << "| "
+                      << book->get_author() << "| " << book->get_price() << "\n";
+        }
+    }
+
+    mysql_free_result(result);
+
+}
 
 
 
@@ -482,12 +636,12 @@ User* Library::register_user(const User& new_user) {
     return &users.back();
 }
 
-
+// old file system
 bool Library::is_email_registered(const std::string& email) const {
     return registered_emails.find(email) != registered_emails.end();
 }
 
-
+// old file system
 void Library::save_user_to_file() const {
     std::ofstream outFile("users.txt");
     if(!outFile) {
@@ -503,7 +657,7 @@ void Library::save_user_to_file() const {
     outFile.close();
 }
 
-
+// old file system
 void Library::load_user_from_file() {
     std::ifstream inFile("users.txt");
     if(!inFile) {
@@ -587,16 +741,38 @@ void Library::load_users_from_database() {
 }
 
 
-void Library::search_user(const std::string& userId) const {
-    for(const auto& user: users) {
-        if(user.get_userId() == userId) {
-            std::cout << user.get_userId() << "| " << user.get_name() << "| " 
-                      << user.get_email() << "| " << static_cast<int> (user.get_role());
-            return;
-        }
+void Library::search_user_by_substr(std::string& searchQuery) const {
+    if(this->db == nullptr || this->db->get_connection() == nullptr) {
+        std::cerr << "[Library Error] Cannot search user by searchQuery. Database connection is null.\n";
+        return;
     }
 
-    std::cerr << "Error: User " << userId << " does not exist!";
+    std::stringstream queryStream;
+    queryStream << "SELECT userId, name FROM User "
+                << "WHERE userId LIKE '%" << searchQuery << "%'"
+                << "OR name LIKE '%" << searchQuery << "%';";
+
+    std::string query = queryStream.str();
+    if(mysql_query(this->db->get_connection(), query.c_str()) != 0) {
+        std::cerr << "[Library Error] Query Failed: " << mysql_error(this->db->get_connection()) << "\n";
+        return;
+    }
+
+    MYSQL_RES* result = mysql_store_result(this->db->get_connection());
+    if(result == nullptr) return;
+
+    auto no_of_rows = mysql_num_rows(result);
+    if(no_of_rows == 0) {
+        std::cout << "[Library Error] No matching users for subQuery\n\n";
+        return;
+    }
+
+    MYSQL_ROW row;
+    while((row = mysql_fetch_row(result)) != 0) {
+        std::cout << row[0] << "| " << row[1] << "\n";
+    }
+
+    mysql_free_result(result);
 }
 
 
@@ -710,7 +886,7 @@ std::string Library::generate_next_user_id() {
 
 
 // ************** Transactions ***************
-
+// old file system
 bool Library::is_valid_transaction(const std::string& bookId, const std::string& userId) {
 
 
@@ -722,7 +898,7 @@ bool Library::is_valid_transaction(const std::string& bookId, const std::string&
     return false;
 }
 
-
+// old file system
 void Library::save_transactions_to_file() const {
     std::ofstream outFile("transaction.txt");
     if(!outFile) {
@@ -771,7 +947,7 @@ void Library::save_transaction_to_db(const Transaction& new_trans) {
               << " securely committed to database.\n";
 }
 
-
+// old file system
 void Library::load_transactions_from_file() {
     std::ifstream inFile("transaction.txt");
     if(!inFile) {

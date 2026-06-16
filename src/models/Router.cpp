@@ -148,6 +148,7 @@ void Router::show_student_menu() const {
     std::cout << "3. Borrow / Issue a Book\n";
     std::cout << "4. Return a Book\n";
     std::cout << "5. View My Borrowed Books Portfolio\n"; // Day 10 Module 1 hook
+    std::cout << "6. View all active(currently borrowed) books\n";
     std::cout << "0. Logout\n";
 }
 
@@ -205,7 +206,8 @@ void Router::handleAdminRouter(int choice) {
             try {
                 role = std::stoi(roleStr);
                 if(role != 1 && role != 2) throw std::runtime_error("Invalid role selected");
-                User* new_user = lib->register_user(User(name, email, static_cast<UserRole> (role)));
+                std::string userId = lib->generate_next_user_id();
+                User* new_user = lib->register_user(User(userId, name, email, static_cast<UserRole> (role)));
 
                 std::cout << "User added successfully!\n";
             } 
@@ -224,17 +226,17 @@ void Router::handleAdminRouter(int choice) {
             std::string searchQuery{};
             std::getline(std::cin, searchQuery);
 
-            lib->search_book(searchQuery);
+            lib->search_books_by_substr(searchQuery);
             break;
         }
         case 6: {
             clearInputBuffer();
 
-            std::cout << "UserId required: ";
             std::string searchQuery{};
+            std::cout << "UserId/Name of book: ";
             std::getline(std::cin, searchQuery);
 
-            lib->search_user(searchQuery);
+            lib->search_user_by_substr(searchQuery);
             break;
         }
         case 0:
@@ -255,10 +257,10 @@ void Router::handleStudentRouter(int choice) {
         case 2: {
             clearInputBuffer();
             std::string searchQuery{};
-            std::cout << "Title/Author of book: ";
+            std::cout << "BookId/Title/Author of book: ";
             std::getline(std::cin, searchQuery);
 
-            lib->search_book(searchQuery);
+            lib->search_books_by_substr(searchQuery);
             break;
         }
 
@@ -283,7 +285,11 @@ void Router::handleStudentRouter(int choice) {
         }
 
         case 5: 
-            currentUser->display_borrowed_books();
+            lib->display_borrow_books(currentUser->get_userId());
+            break;
+
+        case 6:
+            lib->display_active_loans();
             break;
 
         case 0:
